@@ -54,6 +54,11 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         return null;
     }
 
+    @Override
+    public String resolveShortCode(String shortCode) {
+        return repository.findByShortCode(shortCode).getOriginalUrl();
+    }
+
     private String generateUniqueShortCode() {
         String shortCode;
 

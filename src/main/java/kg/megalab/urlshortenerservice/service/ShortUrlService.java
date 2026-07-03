@@ -17,4 +17,6 @@ public interface ShortUrlService {
     ShortUrlResponse findById(Long id);
 
     ShortUrl getByShortCode(String shortCode);
+
+    String resolveShortCode(String shortCode);
 }

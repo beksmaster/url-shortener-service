@@ -10,13 +10,12 @@ import kg.megalab.urlshortenerservice.service.ShortUrlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
-@RequestMapping
+@RequestMapping()
 @RequiredArgsConstructor
 public class ShortUrlController {
 
@@ -27,7 +26,7 @@ public class ShortUrlController {
             @ApiResponse(responseCode = "201", description = "Short URL created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<ShortUrlResponse> create(
             @Valid @RequestBody CreateShortUrlRequest request) {
 
@@ -36,5 +35,13 @@ public class ShortUrlController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @Operation(summary = "Get url by short code")
+    @GetMapping("/{shortCode}")
+    public ResponseEntity<Void> getUrl(@PathVariable String shortCode) {
+        return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI.create(shortUrlService.resolveShortCode(shortCode))).build();
     }
 }
