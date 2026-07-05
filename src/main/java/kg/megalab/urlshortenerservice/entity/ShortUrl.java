@@ -35,6 +35,10 @@ public class ShortUrl {
     @Column(name = "click_count", nullable = false)
     private Long clickCount = 0L;
 
+    public void incrementClickCount() {
+        clickCount++;
+    }
+
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "owner_id")
 //    private User owner;

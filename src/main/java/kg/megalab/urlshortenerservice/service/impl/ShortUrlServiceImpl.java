@@ -3,6 +3,7 @@ package kg.megalab.urlshortenerservice.service.impl;
 import kg.megalab.urlshortenerservice.dto.request.CreateShortUrlRequest;
 import kg.megalab.urlshortenerservice.dto.response.ShortUrlResponse;
 import kg.megalab.urlshortenerservice.entity.ShortUrl;
+import kg.megalab.urlshortenerservice.exception.ShortCodeNotFoundException;
 import kg.megalab.urlshortenerservice.mapper.ShortUrlMapper;
 import kg.megalab.urlshortenerservice.repository.ShortUrlRepository;
 import kg.megalab.urlshortenerservice.service.ShortCodeGenerator;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -54,10 +56,24 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         return null;
     }
 
+    @Transactional
     @Override
     public String resolveShortCode(String shortCode) {
-        return repository.findByShortCode(shortCode).getOriginalUrl();
+
+        ShortUrl shortUrl = repository.findByShortCode(shortCode)
+                .orElseThrow(ShortCodeNotFoundException::new);
+
+        if(Instant.now().isAfter(shortUrl.getExpiresAt()))
+        {
+            throw new ShortCodeNotFoundException();
+        }
+
+        shortUrl.incrementClickCount();
+
+        return shortUrl.getOriginalUrl();
     }
+
+
 
     private String generateUniqueShortCode() {
         String shortCode;
