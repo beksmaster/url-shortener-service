@@ -12,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -22,6 +24,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     private final ShortUrlRepository repository;
     private final ShortCodeGenerator generator;
     private final ShortUrlMapper mapper;
+    private final RedisUrlCacheService cacheService;
 
     @Transactional
     @Override
@@ -60,15 +63,31 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     @Override
     public String resolveShortCode(String shortCode) {
 
+        Optional<String> cachedUrl = cacheService.get(shortCode);
+
+        if(cachedUrl.isPresent()){
+
+            repository.incrementClickCount(shortCode);
+            return cachedUrl.get();
+        }
+
+        System.out.println("Reading from PostgreSQL");
+
         ShortUrl shortUrl = repository.findByShortCode(shortCode)
                 .orElseThrow(ShortCodeNotFoundException::new);
 
-        if(Instant.now().isAfter(shortUrl.getExpiresAt()))
+        Instant now = Instant.now();
+
+        if(now.isAfter(shortUrl.getExpiresAt()))
         {
             throw new ShortCodeNotFoundException();
         }
 
-        shortUrl.incrementClickCount();
+        Duration duration = Duration.between( now, shortUrl.getExpiresAt() );
+
+        cacheService.saveUrlByShortCode( shortCode, shortUrl.getOriginalUrl(), duration );
+
+        repository.incrementClickCount(shortCode);
 
         return shortUrl.getOriginalUrl();
     }
