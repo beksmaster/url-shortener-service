@@ -201,17 +201,15 @@ Location: https://roadmap.sh/java
 
 ## Тестирование
 
-Интеграционные тесты автоматически запускают PostgreSQL 17 через Testcontainers.
-Для тестов кэширования Redis должен быть доступен локально:
+Интеграционные тесты автоматически запускают PostgreSQL 17 и Redis 8
+через Testcontainers, поэтому локально требуется только работающий Docker:
 
 ```bash
-docker compose up -d redis
 ./mvnw test
 ```
 
 В Windows:
 
 ```powershell
-docker compose up -d redis
 .\mvnw.cmd test
 ```
