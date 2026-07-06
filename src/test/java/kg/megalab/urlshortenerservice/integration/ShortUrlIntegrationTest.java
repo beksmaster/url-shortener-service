@@ -63,7 +63,13 @@ public class ShortUrlIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.originalUrl").value(request.originalUrl()))
                 .andExpect(jsonPath("$.expiresAt").value(request.expiresAt().toString()))
-                .andExpect(jsonPath("$.shortCode").isNotEmpty());
+                .andExpect(jsonPath("$.shortCode").isNotEmpty())
+                .andExpect(jsonPath("$.shortUrl").isNotEmpty())
+                .andExpect(jsonPath("$.shortUrl").value(
+                        org.hamcrest.Matchers.endsWith(
+                                "/" + repository.findAll().getFirst().getShortCode()
+                        )
+                ));
 
         ShortUrl shortUrl = repository.findAll().getFirst();
 

@@ -9,6 +9,8 @@ import kg.megalab.urlshortenerservice.repository.ShortUrlRepository;
 import kg.megalab.urlshortenerservice.service.ShortCodeGenerator;
 import kg.megalab.urlshortenerservice.service.ShortUrlService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class ShortUrlServiceImpl implements ShortUrlService {
+
+    static final Logger log = LoggerFactory.getLogger(ShortUrlServiceImpl.class);
 
     private final ShortUrlRepository repository;
     private final ShortCodeGenerator generator;
@@ -35,6 +39,8 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         ShortUrl shortUrl = mapper.toEntity(request, shortCode);
 
         ShortUrl saved = repository.save(shortUrl);
+
+        log.info("Short URL created: {}", shortCode);
 
         return mapper.toResponse(saved);
     }
@@ -68,10 +74,11 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         if(cachedUrl.isPresent()){
 
             repository.incrementClickCount(shortCode);
+            log.info("Cache hit for {}", shortCode);
             return cachedUrl.get();
         }
 
-        System.out.println("Reading from PostgreSQL");
+        log.info("Cache miss for {}", shortCode);
 
         ShortUrl shortUrl = repository.findByShortCode(shortCode)
                 .orElseThrow(ShortCodeNotFoundException::new);
