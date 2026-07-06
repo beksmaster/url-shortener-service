@@ -17,5 +17,25 @@ services:
     ports:
       - "6379:6379"
 
+  app:
+    build: .
+    container_name: url-shortener
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+    ports:
+      - "8080:8080"
+
 volumes:
   postgres_data:
+

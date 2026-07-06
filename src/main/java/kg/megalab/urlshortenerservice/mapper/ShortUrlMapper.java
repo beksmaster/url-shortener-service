@@ -13,6 +13,7 @@ public class ShortUrlMapper {
                 shortUrl.getId(),
                 shortUrl.getOriginalUrl(),
                 shortUrl.getShortCode(),
+                null,
                 shortUrl.getCreatedAt(),
                 shortUrl.getExpiresAt(),
                 shortUrl.getClickCount()

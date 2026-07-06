@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
@@ -32,9 +33,15 @@ public class ShortUrlController {
 
         ShortUrlResponse response = shortUrlService.create(request);
 
+        String shortUrl = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/{shortCode}")
+                .buildAndExpand(response.shortCode())
+                .toUriString();
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(response);
+                .body(response.withShortUrl(shortUrl));
     }
 
     @Operation(summary = "Get url by short code")
