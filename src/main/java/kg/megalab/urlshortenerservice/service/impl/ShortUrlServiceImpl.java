@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -34,26 +33,6 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         ShortUrl saved = repository.save(shortUrl);
 
         return mapper.toResponse(saved);
-    }
-
-    @Override
-    public List<ShortUrlResponse> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public void deleteById(Long id) {
-
-    }
-
-    @Override
-    public ShortUrlResponse findById(Long id) {
-        return null;
-    }
-
-    @Override
-    public ShortUrl getByShortCode(String shortCode) {
-        return null;
     }
 
     @Transactional
