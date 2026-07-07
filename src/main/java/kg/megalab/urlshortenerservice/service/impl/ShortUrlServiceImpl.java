@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -43,26 +42,6 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         log.info("Short URL created: {}", shortCode);
 
         return mapper.toResponse(saved);
-    }
-
-    @Override
-    public List<ShortUrlResponse> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public void deleteById(Long id) {
-
-    }
-
-    @Override
-    public ShortUrlResponse findById(Long id) {
-        return null;
-    }
-
-    @Override
-    public ShortUrl getByShortCode(String shortCode) {
-        return null;
     }
 
     @Transactional
