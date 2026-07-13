@@ -6,6 +6,7 @@ import kg.megalab.urlshortenerservice.entity.ShortUrl;
 import kg.megalab.urlshortenerservice.exception.ShortCodeNotFoundException;
 import kg.megalab.urlshortenerservice.mapper.ShortUrlMapper;
 import kg.megalab.urlshortenerservice.repository.ShortUrlRepository;
+import kg.megalab.urlshortenerservice.service.MetricsService;
 import kg.megalab.urlshortenerservice.service.ShortCodeGenerator;
 import kg.megalab.urlshortenerservice.service.ShortUrlService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     private final ShortCodeGenerator generator;
     private final ShortUrlMapper mapper;
     private final RedisUrlCacheService cacheService;
+    private final MetricsService metricsService;
 
     @Transactional
     @Override
@@ -38,6 +40,8 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         ShortUrl shortUrl = mapper.toEntity(request, shortCode);
 
         ShortUrl saved = repository.save(shortUrl);
+
+        metricsService.incrementUrlCreated();
 
         log.info("Short URL created: {}", shortCode);
 
@@ -53,14 +57,20 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         if(cachedUrl.isPresent()){
 
             repository.incrementClickCount(shortCode);
+            metricsService.incrementCacheHit();
+            metricsService.incrementRedirect();
             log.info("Cache hit for {}", shortCode);
             return cachedUrl.get();
         }
+
+
 
         log.info("Cache miss for {}", shortCode);
 
         ShortUrl shortUrl = repository.findByShortCode(shortCode)
                 .orElseThrow(ShortCodeNotFoundException::new);
+
+        metricsService.incrementCacheMiss();
 
         Instant now = Instant.now();
 
@@ -73,7 +83,11 @@ public class ShortUrlServiceImpl implements ShortUrlService {
 
         cacheService.saveUrlByShortCode( shortCode, shortUrl.getOriginalUrl(), duration );
 
+        log.info("Saved {} to Redis cache", shortCode);
+
         repository.incrementClickCount(shortCode);
+
+        metricsService.incrementRedirect();
 
         return shortUrl.getOriginalUrl();
     }

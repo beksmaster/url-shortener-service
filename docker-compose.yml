@@ -17,6 +17,30 @@ services:
     ports:
       - "6379:6379"
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: url-shortener-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: url-shortener-grafana
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      - prometheus
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
   app:
     build: .
     container_name: url-shortener
@@ -38,4 +62,4 @@ services:
 
 volumes:
   postgres_data:
-
+  grafana_data:

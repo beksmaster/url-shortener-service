@@ -41,6 +41,10 @@ HTTP-запрос
 Controller ──► Service ──► Repository ──► PostgreSQL
                   │
                   └──────► Redis
+
+Spring Boot Actuator ──► Prometheus ──► Grafana
+        │
+        └── /actuator/prometheus
 ```
 
 - `controller` принимает HTTP-запросы и формирует ответы;
@@ -48,6 +52,9 @@ Controller ──► Service ──► Repository ──► PostgreSQL
 - `repository` работает с PostgreSQL через Spring Data JPA;
 - Redis ускоряет повторное разрешение коротких ссылок;
 - Flyway создаёт и обновляет структуру базы данных.
+- Spring Boot Actuator публикует технические и бизнес-метрики через `/actuator/prometheus`;
+- Prometheus собирает метрики приложения;
+- Grafana использует Prometheus как источник данных для дашбордов и визуализации метрик.
 
 ## Основные пакеты
 
@@ -213,3 +220,28 @@ Location: https://roadmap.sh/java
 ```powershell
 .\mvnw.cmd test
 ```
+
+## Метрики
+
+Prometheus-метрики доступны через Spring Boot Actuator:
+
+```text
+http://localhost:8080/actuator/prometheus
+```
+
+Сервис публикует следующие счётчики:
+
+| Метрика в приложении | Имя в Prometheus | Описание |
+|---|---|---|
+| `url.creation` | `url_creation_total` | Созданные короткие ссылки |
+| `url.redirect` | `url_redirect_total` | Перенаправления по коротким ссылкам |
+| `url.cache.hit` | `url_cache_hit_total` | Попадания в Redis-кэш |
+| `url.cache.miss` | `url_cache_miss_total` | Промахи Redis-кэша |
+
+При экспорте точки в имени заменяются на `_`, а для `Counter` добавляется суффикс `_total`. Имя `url.created` использовать не следует: суффикс `_created` зарезервирован Prometheus, поэтому такая метрика экспортируется как `url_total`.
+
+### Дашборд Grafana
+
+Пример дашборда Grafana с метриками создания ссылок, редиректов, кэша и использования CPU:
+
+![Дашборд Grafana](docs/images/grafana-dashboard.png)
